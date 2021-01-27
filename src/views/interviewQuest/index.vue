@@ -419,6 +419,18 @@
             答案：
                 后面的会覆盖前面的
                 { code: null, name: undefined, type: 'number', value: '666'}
+            
+            <img src="@img/quest67.png" alt="">
+            答案：
+                只有不传参数或者参数为undefined的时候才会使用默认值，因为undefined表示一个空值
+            
+            <img src="@img/quest68.png" alt="">
+            答案： 错
+            解析：
+                源码中vue中的生命周期是通过call进行执行，所以不能使用箭头函数
+
+            
+
 
       </pre>
   </div>

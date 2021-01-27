@@ -97,6 +97,12 @@ const routesList = [
         path:"/position",
         component: () => import(/* webpackChunkName: "function2" */ '../views/css/position'),
       },
+      {
+        label:'grid',
+        id:'grid',
+        path:"/grid",
+        component: () => import(/* webpackChunkName: "function2" */ '../views/css/grid'),
+      },
     ]
   },
   {

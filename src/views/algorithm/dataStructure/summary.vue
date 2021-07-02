@@ -17,6 +17,26 @@
         <p>{{ word }}</p>
         <button @click="revertByWord">反转</button>
         <p>{{ revertWord }}</p>
+        <div class="answer-box">
+            <el-collapse v-model="grayCodeFlag" >
+                <el-collapse-item title="答案" name="1">
+                    <codemirror
+                        ref="mycode"
+                        value="
+                            function revertByWord (word) {
+                                // 根据空格把单子分割成数组，然后再把每个单子分割成数组，
+                                // 再进行反转，再组合成单词，再组合成句子
+
+                                return word.splite(' ').map(item => {
+                                    return item.splite('').reverse().join()
+                                }).join()
+                            }"
+                        :options="cmOptions"
+                        class="code"/>
+                </el-collapse-item>
+            </el-collapse>
+        </div>
+        
         <h3>2. 如下电话号码，点击任意键进行字母组合</h3>
         <div class="key" @click="keyBtn($event)">
             <span v-for="(item,index) in keyArr" :key="index"><i>{{index+1}}</i>{{item}}</span>
@@ -25,6 +45,58 @@
         <div class="key">
             <span v-for="(item,index) in keyVal" :key="index">{{item}}</span>
         </div>
+        <div class="answer-box">
+            <el-collapse v-model="grayCodeFlag" >
+                <el-collapse-item title="答案" name="1">
+                    <codemirror
+                        ref="mycode"
+                        value="
+                            const saveKeyArr = []
+                            let timer;
+                            function keyBtn (e) {
+                                saveKeyArr.push(e.target.innerText.substr(1))
+                                bounce(composeWord)
+                            }
+                            function bounce(callBack){
+                                if (timer) {
+                                    clearTimeout(timer)
+                                }
+                                setTimeout(() => {
+                                    callBack()
+                                },2000)
+                            }
+                            function composeWord (array)) {
+                                /**
+                                    原理：把每次点击的字母放在一个数组中，
+                                    先组合数组的前两项，然后把结果替换为前两项，
+                                    再一次往下计算两项进行替换，直到数字只有一项为止
+                                */
+                                // 如果数字只有一项直接返回
+                                if (array.length <= 1) {
+                                    return array
+                                }
+                                // 组合前两项
+                                let arr = []
+                                for(let i = 0; i < array[0].length; i++){
+                                   for(let j = 0; j < array[1].length; j++){
+                                       arr.push(array[0][i] + '' + array[1][j])
+                                    } 
+                                }
+                                // 把新的结果替换为前两项
+                                array.splice(0,2,arr)
+                                // array大于一表示可以继续组合
+                                if(array.length > 1){
+                                    composeWord(array)
+                                }
+                                return array
+                            }
+                            "
+                        :options="cmOptions"
+                        class="code"/>
+                </el-collapse-item>
+            </el-collapse>
+        </div>
+        
         <h3>3. 卡牌分组</h3>
         <pre>
             给定一副牌，每张牌上都写着一个整数
@@ -52,6 +124,55 @@
         <input type="text" v-model="cardInput">
         <button @click="cardInputBtn">提交</button>
         <p>输出值：{{cardVal}} <span v-for="(item,index) in cardObj" :key="index">[<i v-for="(items,indexs) in item" :key="indexs">{{index}}</i>]</span> </p>
+        <div class="answer-box">
+            <el-collapse v-model="grayCodeFlag" >
+                <el-collapse-item title="答案" name="1">
+                    <codemirror
+                        ref="mycode"
+                        value="
+                            /*
+                                思路：
+                                    1. 每张卡片上写着一个整数，因此可以根据这个进行排序，把相同的数字排在一起
+                                    2. 遍历找出每个数字的数量，并且找出其中最小的数量的个数
+                                    3. 使用每个数字的数量除以最小的个数，不能除正就返回False,否则就是true
+                            */
+                            function cardInputBtn (arr) {
+                                // 进行从小到大的排序
+                                arr.sort((a,b)=>a-b)
+                                const obj = {}
+                                let min = Number.MAX_SAFE_INTEGER
+                                arr.forEach((item, index) => {
+                                    // 如果不存在就进行初始化，否则就进行加1
+                                    if (obj[item]) {
+                                        obj[item] = obj[item] + 1
+                                        // 最后一项也进行比较
+                                        if (index === arr.length -1 && obj[index-1] < min) {
+                                            min = obj[index-1]
+                                        }
+                                    } else {
+                                        obj[item] = 1
+                                        // 新的数字类型就使用上个类型和最小值进行比较
+                                        if (index >= 1 && obj[index-1] < min) {
+                                            min = obj[index-1]
+                                        }
+                                    }
+                                })
+                                // 判断每个数字类型的个数是否可以整除最小值
+                                for(let key in obj){
+                                    if (obj.hasOwnProperty(key)) {
+                                        if(obj[key]%min!==0){
+                                            return false
+                                        }
+                                    }
+                                }
+                                return true
+                            }
+                            "
+                        :options="cmOptions"
+                        class="code"/>
+                </el-collapse-item>
+            </el-collapse>
+        </div>
         <h3>4. 种花问题</h3>
         <pre>
             假设你有一个很长的花坛，一部分地块种植了花，另一部分却没有。可是，花卉不能种植在相邻的地块上，它们会争夺水源，两者都会死去。
@@ -86,6 +207,58 @@
         </p>
         <p>种植结果：{{flowersResult}}</p>
         <p>当前只能种植：{{flowersOnlyN}}株</p>
+        <div class="answer-box">
+            <el-collapse v-model="grayCodeFlag" >
+                <el-collapse-item title="答案" name="1">
+                    <codemirror
+                        ref="mycode"
+                        value="
+                            /*
+                                思路：
+                                    1. 当前元素为0并且上一个和下一个都为0表示可以种树
+                                    2. 当前元素为0并且为第一项时候，下一个元素为0表示可以种树
+                                    3. 当前元素为0并且为最后一项的时候，上一个元素为0表示可以种树
+                            */
+                            function flowersBtn (arr,n) {
+                                if (arr.length <= 0) {
+                                    return false
+                                }
+                                if (arr.length === 1) {
+                                    return arr[0] === 0 ? ture : false
+                                }
+                                let num = 0
+                                for (let index = 0; index < arr.length; index++) {
+                                    const item = arr[index]
+                                    if (item === 0) {
+                                        // 当前元素为第一项的时候并且下一个元素为0的时候可以种树
+                                        if (index === 0 && arr[index+1] === 0) {
+                                            num++
+                                            // 把索引指向下一个元素
+                                            index = index+1
+                                        // 最后一项的时候 并且上一个元素为0
+                                        } else if (index === arr.length-1 && arr[index-1] === 0){
+                                            num++
+                                        } else { // 中间值，只需要判断上下两个元素是否为0
+                                            if (arr[index-1] === 0 && arr[index+1] === 0) {
+                                                num++
+                                                // 把索引指向下一个元素
+                                                index = index+1
+                                            }
+                                        }
+                                    }
+                                }
+                                // 如果num大于等于n表示可以种树
+                                if (num >= n) {
+                                    return true
+                                }
+                                return false
+                            }
+                            "
+                        :options="cmOptions"
+                        class="code"/>
+                </el-collapse-item>
+            </el-collapse>
+        </div>
         <h3>5. 格雷编码</h3>
         <pre>
             格雷编码是一个二进制数字系统，在该系统中，两个连续的数值仅有一个位数的差异。
@@ -605,9 +778,28 @@
 </template>
 
 <script>
+import { codemirror } from 'vue-codemirror'
+import 'codemirror/theme/ambiance.css'
+require('codemirror/mode/javascript/javascript') // 这里引入的模式的js，根据设置的mode引入，一定要引入！！
+require('codemirror/mode/python/python.js')
+require('codemirror/addon/fold/foldcode.js')
+require('codemirror/addon/fold/foldgutter.js')
+require('codemirror/addon/fold/brace-fold.js')
+require('codemirror/addon/fold/xml-fold.js')
+require('codemirror/addon/fold/indent-fold.js')
+require('codemirror/addon/fold/markdown-fold.js')
+require('codemirror/addon/fold/comment-fold.js')
 export default {
     data(){
         return {
+            cmOptions: {
+                value: '',
+                // mode: 'text/javascript',
+                theme: 'idea',
+                readOnly: true,
+                lineNumbers: false, // 是否显示行数
+                showCursorWhenSelecting: true,
+            },
             word: "Let's go to schools",
             revertWord: '',
             keyArr: ['','abc','def','ghi','jkl','mno','pqrs','tuv','wxyz'],
@@ -649,6 +841,9 @@ export default {
     },
     mounted () {
 
+    },
+    components: {
+        codemirror,
     },
     methods: {
         // 单词反转
@@ -738,17 +933,20 @@ export default {
         */
         cardInputBtn () {
             let arr = this.cardInput.split('')
+            console.log(arr)
             arr.sort((a,b)=>a-b)
             let obj = {}
             let min = Number.MAX_SAFE_INTEGER
             arr.forEach((item,index)=>{
                 if(obj[item]){
                     obj[item] += 1
+                    // 如果是最后一项再进行比较
                     if(index === (arr.length-1) && obj[arr[index-1]] < min){
                         min = obj[arr[index-1]]
                     }
                 } else {
                     obj[item] = 1
+                    // 每获取一个新的key的时候就和上一个key的值进行比较，使得每一个key的值都进行了比较找出了最小值
                     if(index > 1 && obj[arr[index-1]] < min){
                         min = obj[arr[index-1]]
                     }
@@ -781,7 +979,13 @@ export default {
             const arr = this.flowersInput.split('')
             if(arr.length===1 && arr[0] === '0'){
                 this.flowersResult = true
-                return true
+                this.flowersOnlyN = 1
+                if(n > 1){ 
+                    this.flowersResult = false
+                    return false
+                } else {
+                    return true
+                }
             }
             let n = 0
             for(let i = 0; i < arr.length; i ++){

@@ -163,10 +163,10 @@
             属性指定项目放在哪一个区域。
             把第三个项目放在a区域 grid-area: a;
             <img src="@img/grid7.png" alt="">
-            <img src="@img/grid78.png" alt="">
+            <img src="@img/grid8.png" alt="">
 
             grid-area属性还可用作grid-row-start、grid-column-start、grid-row-end、grid-column-end的合并简写形式，直接指定项目的位置。
-            grid-area: <row-start> / <column-start> / <row-end> / <column-end>;
+            grid-area: row-start / column-start / row-end / column-end;
 
         9. justify-self: start | end | center | stretch;
             属性设置单元格内容的水平位置（左中右），跟justify-items属性的用法完全一致，但只作用于单个项目。
@@ -176,14 +176,9 @@
 
         11. place-self
             属性是align-self属性和justify-self属性的合并简写形式。
-            place-self: <align-self> <justify-self>;
-
-        
-
-        
-
-
+            place-self: align-self justify-self;
   </pre>
+  <h4>注意： grid兼容性，不兼容ios10.3,有的iphone6和iphone7都是这个版本的ios</h4>
 </div>
 </template>
 

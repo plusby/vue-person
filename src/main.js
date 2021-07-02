@@ -7,7 +7,11 @@ import './assets/css/common.less';
 import '@service/element-ui';
 import VueHighlightJS from 'vue-highlightjs';
 import 'highlight.js/styles/monokai-sublime.css'
+import VueCodeMirror from 'vue-codemirror'
+import 'codemirror/lib/codemirror.css'
 
+
+Vue.use(VueCodeMirror)
 Vue.use(VueHighlightJS);
 Vue.use(MetaInfo)  // 使用meta
 Vue.config.productionTip = false;

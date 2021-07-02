@@ -1,5 +1,6 @@
 <template>
   <div class="api-wrap">
+      <pre>
       <h2>组合模式和响应式api</h2>
       <h3>组合模式</h3>
        将之前选择模式中的data和methods这些方法，通过vue提供的components API ，放在setup中去处理。
@@ -576,6 +577,7 @@
                     }
                 })
             }
+    </pre>
   </div>
 </template>
 

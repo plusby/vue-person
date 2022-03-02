@@ -1,12 +1,199 @@
 <template>
   <pre>
     <h2>动态规划</h2>
+    把大问题划分为一个个小问题，再通过小问题推算出大问题
+
     问题：
       从给定的数字中，组合不相邻的数，使得结果最大
 
       number：1 2 3 2 1 5 7 6
       结果：15
       解析：1 3 5 6
+
+      思路：
+        计算到最后只有两种结果，
+        如果选中6进行计算，那么上一次的计算就是包括5
+        如果不选中6进行计算，那么上一次的计算就是7
+
+        如果选中5，那么上一次的计算就是2
+        如果不选中5，那么上一次的计算就是1
+
+        如果选中7，那么上一次的计算就是1
+        如果不选中7，那么上一次的计算就是5
+
+        依次往前推，最后到1的时候，如果选择1直接返回1，如果选择1之前的数那么就是0
+
+        优化点：从上面步骤中可以看出有大量的重复计算，因此可以保存之前计算的结果
+
+      <codemirror
+        ref="mycode"
+        value="
+          function maxValue(arr){
+              function _maxValue(arr, i){
+                // 如果i等于0的时候直接返回第一项，小于0直接返回0
+                if(i === 0){
+                  return arr[0]
+                } else if(i <= 0) {
+                  return 0
+                }
+                // 选择这项 用这项加上上上项的和
+                const selected = arr[i] + _maxValue(arr, i - 2)
+                // 不选择这项 直接得到上一项的和
+                const unSelect = _maxValue(arr, i - i)
+                // 返回最大值
+                return Math.max(selected,unSelect)
+              }
+              return _maxValue(arr, arr.length-1)
+          }
+          const arr = [1,2,3,4,5]
+          maxValue(arr) // 9
+          const arr2 = [1, 2, 3, 2, 1, 5, 7, 6]
+          maxValue(arr2) // 15
+
+          // 进行优化
+          function maxValue2(arr){
+              const obj = {}
+              function _maxValue(arr, i){
+                // 如果i等于0的时候直接返回第一项，小于0直接返回0
+                if(i === 0){
+                  return arr[0]
+                } else if(i <= 0) {
+                  return 0
+                }
+                let selected
+                // 选择这项 用这项加上上上项的和
+                if (obj[i-2]) {
+                  selected = obj[i-2]
+                } else {
+                  selected = arr[i] + _maxValue(arr, i - 2)
+                  obj[i-2] = selected
+                }
+                // 不选择这项 直接得到上一项的和
+                let unSelect
+                if (obj[i-1]) {
+                  selected = obj[i-1]
+                } else {
+                  unSelect = _maxValue(arr, i - i)
+                  obj[i-1] = unSelect
+                }
+                // 返回最大值
+                return Math.max(selected,unSelect)
+              }
+              return _maxValue(arr, arr.length-1)
+          }
+        "
+        :options="cmOptions"
+        class="code"/>
+
+    问题1：
+      <img src="../../../assets/search/m3.png" alt="">
+
+      思路：
+        到达目的地，只有从(m,n-1)或(m-1,n)这两个格子过去
+
+        到(m,n-1)只有从(m,n-2)或(m-1,n-1)两个格子过去
+
+        到(m-1,n)只有从(m-1,n-1)或(m-3,n)两个格子过去
+
+        依次类推，得到 f(m,n) = f(m,n-1) + f(m-1,n)
+        那么起始值f(1,1) = 0; f(1,2) = 1; f(1,3) = 1
+        f(2,1) = 1; 在第一列或者第一行的路线只有1条，
+        因此f(1,n) = 1; f(m,1) = 1;
+
+      <codemirror
+        ref="mycode"
+        value="
+          function roate(m, n){
+              function _roate(m, n){
+                // 如果m和n都是0的时候，表示在起始位置直接返回1
+                if(m === 1 && n === 1){
+                  return 0
+                } else if(m < 1 || n < 1) {
+                  return 0
+                }
+                if ((m === 1 && n > 1) || (n === 1 && m > 1)) {
+                  return 1
+                }
+                return _roate(m-1, n) + _roate(m, n-1)
+              }
+              return _roate(m, n)
+          }
+          roate(7,3) // 28
+
+          function rote2(m, n){
+            if (m <= 0 || n <= 0) {
+              return 0
+            }
+            const arr = []
+            for(let i = 0; i < n; i++){
+              const row = []
+              for(let j = 0; j < m; j++){
+                if (i === 0 || j === 0) {
+                  row.push(1)
+                } else {
+                  row.push(null)
+                }
+              }
+              arr.push(row)
+            }
+
+            for(let i = 1; i < n; i++){
+              for(let j = 1; j < m; j++){
+                arr[i][j] = arr[i-1][j] + arr[i][j-1]
+              }
+            }
+            return arr[n-1][m-1]
+          }
+
+
+        "
+        :options="cmOptions"
+        class="code"/>
+
+    问题3:
+      给定一个m*n的网格，请找出一条从左上角到右下角的路径，使得路径上的数字总和最小
+
+      [1, 3, 1, 1]
+      [1, 3, 1, 1]
+      [1, 3, 1, 1]
+
+      答案： 1, 3, 1, 1, 1, 1  => 8
+
+      <codemirror
+        ref="mycode"
+        value="
+          function min(arr){
+              function _min(m, n){
+                // 起点直接返回起点的值
+                if(m === 0 && n === 0){
+                  return arr[0][0]
+                }
+                // 全部小于0 就返回0
+                if (m < 0 && n < 0) {
+                  return 0
+                }
+                // 最左侧列上的时候
+                if ( m > 0 && n <= 0) {
+                  return _min(m-1,0) + arr[m][0]
+                }
+                // 最上面一行的时候
+                if ( n > 0 && m <= 0) {
+                  return _min(0,n-1) + arr[0][n]
+                }
+                return Math.min(_min(m,n-1) + arr[m][n], _min(m-1,n) + arr[m][n])
+              }
+              return _min(arr.length - 1,arr[0].length - 1)
+          }
+          const arr22 = [
+            [1, 3, 1, 1],
+            [1, 3, 1, 1],
+            [1, 3, 1, 1],
+          ]
+          min(arr22) // 8
+
+        "
+        :options="cmOptions"
+        class="code"/>
 
 
 
@@ -79,18 +266,281 @@
         E1、E2到G的路线分别为：E1 + 4 = 20、E2 + 3 = 18 因此取最小值 G = E2 + 3 = 18
         最终结果就是从A到G的最短路线为18
 
+    问题6
+      青蛙跳台阶问题：
+
+        普通青蛙跳台阶
+          问题：
+            一个青蛙一次只能跳一个台阶，或者跳两个台阶。那么这只青蛙跳到n个台阶有多少种情况？
+
+          思路：
+            如果这只青蛙跳到n个台阶，那么最后一次跳之前，它一定在n-1个台阶或者n-2个台阶上；
+            那么这只青蛙跳到n个台阶上，就是跳到n-1个台阶加上n-2个台阶之和，依次往下推，
+            跳到第一个台阶就一种方式跳一个台阶，跳第二个台阶有两种方式每次都跳一个台阶或者
+            一次跳两个台阶，跳第三个台阶有三种可能，每次都跳一次，或者先跳一次再跳两阶，或者
+            先跳两阶再跳一阶
+
+            f(1) = 1
+            f(2) = 2
+            f(3) = 3
+            f(4) = 5
+            f(n) = f(n-1) + f(n-2)
+
+        <codemirror
+          ref="mycode"
+          value="
+            function steps(n){
+              function _steps(n){
+                if(n <= 0){
+                  return 0
+                }
+                if(n===1){
+                  return 1
+                }
+                if(n===2){
+                  return 2
+                }
+                return steps(n-1) + steps(n-2)
+              }
+              return _steps(n)
+            }
+            steps(3) // 3
+          "
+          :options="cmOptions"
+          class="code"/>      
+            
+        青蛙变态跳台阶
+          问：
+            一只青蛙，一次可以跳1个台阶，或者两个台阶，或三个台阶，或四个台阶...或n个台阶
+            那么这只青蛙跳到n个台阶有多少种情况？
+
+            跳1个台阶有1种方式
+            跳两个台阶有2种方式 1,1 或 2
+            跳三个台阶有4种方式 1,1,1 或 1,2 或 2,1 或 3
+            跳四个台阶有8种方式 1,1,1,1 或 1,2,1 或 2,1,1 或 2,2 或 1,1,2 或 1,3 或 3,1 或 4
+
+            f(1) = 1
+            f(2) = 2 = f(1) + 1
+            f(3) = 4 = f(1) + f(2) + 1
+            f(4) = 8 = f(1) + f(2) + f(3) + 1
+            f(n) = f(n-1) + f(n-2) + ... + f(1) + 1
+
+          <codemirror
+            ref="mycode"
+            value="
+              function steps2(n){
+                function _steps(n){
+                  if(n <= 0){
+                    return 0
+                  }
+                  if(n===1){
+                    return 1
+                  }
+                  if(n===2){
+                    return 2
+                  }
+                  if(n===3){
+                    return 4
+                  }
+                  let result = 0
+                  for(let i = 0; i < n; i++){
+                    result +=steps(i)
+                  }
+                  return result + 1
+                }
+                return _steps(n)
+              }
+              steps2(3) // 4
+            "
+            :options="cmOptions"
+            class="code"/> 
+
+      问题7：
+        背包问题：
+            给定商品的价格和大小，放入一个指定大小的背包中，使得放入的商品最大价值
+
+        商品： [{m:30,v:20},{m:20,v:10},{m:10,v:5}]
+        背包体积30
+        <img src="../../../assets/search/bb1.png" alt="">
+        通过图和代码可以看出递归是一直到最底层，并且是从终止递归的地方开始一层一层向上计算；
+        通过递归可以实现上图的所有情况，通过图可以看出，每次都有选中b，不选中b,选中c，不选中c
+        的重复计算，因此可以通过缓存进行缓存优化
+        <codemirror
+            ref="mycode"
+            value="
+              function package(goods,volume){
+                function _package(index,rest){
+                  // 当前商品已经超出最后一个那么直接返回0
+                  if(index >= goods.length){
+                    return 0
+                  }
+                  // 如果当前商品的体积大于了背包剩余空间，放不下直接放下一个
+                  if (goods[index].v > rest) {
+                    return _package(index+1,rest)
+                  }
+                  // 如果能放下，那么分别获取到选中和不选中这个商品
+                  // 选中 当前商品加上下个商品的价值
+                  const selected =  goods[index].m + _package(index+1,rest - goods[index].v)
+                  // 没有选中 返回下个商品的价值
+                  const unselected =  _package(index+1,rest)
+                  // 返回最大值
+                  return Math.max(selected, unselected)
+                }
+                return _package(0,volume)
+              }
+              const goods = [{m:30,v:20},{m:20,v:10},{m:10,v:5}]
+              package(goods,30) // 50
+
+              // 优化
+              function package2(goods,volume){
+                let obj = {}
+                let obj2 = {}
+                function _package(index,rest){
+                  // 当前商品已经超出最后一个那么直接返回0
+                  if(index >= goods.length){
+                    return 0
+                  }
+                  let unselected
+                  if (obj[index+1]) {
+                    // 如果当前商品的体积大于了背包剩余空间，放不下直接放下一个
+                    if (goods[index].v > rest) {
+                      return obj[index+1]
+                    }
+                    unselected = obj[index+1]
+                  } else {
+                    obj[index+1] = _package(index+1,rest)
+                    if (goods[index].v > rest) {
+                      return _package(index+1,rest)
+                    }
+                    // 没有选中 返回下个商品的价值
+                    unselected =  _package(index+1,rest)
+                  }
+
+                  // 选中 当前商品加上下个商品的价值
+                  let selected
+                  if (obj2[index+1]) {
+                    selected =  obj2[index+1]
+                  } else {
+                    selected =  goods[index].m + _package(index+1,rest - goods[index].v)
+                  }
+                  
+                  // 返回最大值
+                  return Math.max(selected, unselected)
+                }
+                return _package(0,volume)
+              }
+            "
+            :options="cmOptions"
+            class="code"/> 
+
+      问题8：
+        最长子字符串问题：
+            给定两个字符串，从中获取到相同的子字符串
+
+         eg:
+            boijdsjhfodisabcdefg132e
+            popjdsopjhabcdefg321
+
+            结果：
+                ojdsjhabcdefg32
+
+        <codemirror
+            ref="mycode"
+            value="
+              function maxStr(str1,str2){
+                function _maxStr(index1,index2){
+                  // 如果字符串1的索引或者字符串2的索引分别超过他们的长度就直接返回空字符串
+                  if (index1 >= str1.length || index2 >= str2.length) {
+                    return ''
+                  }
+                  // 如果相等直接用当前字符加上下个相等的字符
+                  if (str1[index1] === str2[index2]) {
+                    return str1[index1] + _maxStr(index1+1,index2+1)
+                  } else { // 不相同，那么str1的当前字符不动，移动str2进行比较，和str2不动，移动str1进行比较
+                    const a = _maxStr(index1,index2+1) // 大量的递归非常卡，所以需要缓存优化
+                    const b = _maxStr(index1+1,index2)
+                    return a.length > b.length ? a : b
+                  }
+                }
+                return _maxStr(0,0)
+              }
+              const str1 = 'boijdsjhfodisabcdefg132e'
+              const str2 = 'popjdsopjhabcdefg321'
+              maxStr(str1,str2) // ojdsjhabcdefg32
 
 
+               // 通过缓存进行优化，否则计算非常慢
+              function getMaxStr2(str1, str2){
+                  let obj = {}
+                  function _getMaxStr(str1Index, str2Index){
+                      // 当前索引超出了str1或str2的长度直接返回空字符串
+                      if (str1Index >= str1.length || str2Index >= str2.length) {
+                          return ""
+                      }
+                      const key = str1Index + '-' + str2Index
+                      if (obj[key]) {
+                          return obj[key]
+                      }
+                      // 如果当前字符相同，那么就使当前字符和下字符进行连接
+                      let val
+                      if (str1[str1Index] === str2[str2Index]) {
+                          val = str1[str1Index] + _getMaxStr(str1Index+1,str2Index+1)
+                      } else { // 不相同，那么str1的当前字符不动，移动str2进行比较，和str2不动，移动str1进行比较
+                          let sub1 = _getMaxStr(str1Index,str2Index+1)
+                          let sub2 = _getMaxStr(str1Index+1,str2Index)
+                          // 返回长度最大的子串
+                          val = sub1.length > sub2.length ? sub1 : sub2
+                      }
+                      obj[key] = val // 进行缓存
+                      return val
+                  }
+                  return _getMaxStr(0,0)
+              }
+            "
+            :options="cmOptions"
+            class="code"/> 
 
+      问题9：
+        斐波拉契数列
+          0 1 1 2 3 5 8 13 21
 
-
-
-
-
+        <codemirror
+          ref="mycode"
+          value="
+           
+          "
+          :options="cmOptions"
+          class="code"/> 
   </pre>
 </template>
 <script>
+import { codemirror } from 'vue-codemirror'
+import 'codemirror/theme/ambiance.css'
+require('codemirror/mode/javascript/javascript') // 这里引入的模式的js，根据设置的mode引入，一定要引入！！
+require('codemirror/mode/python/python.js')
+require('codemirror/addon/fold/foldcode.js')
+require('codemirror/addon/fold/foldgutter.js')
+require('codemirror/addon/fold/brace-fold.js')
+require('codemirror/addon/fold/xml-fold.js')
+require('codemirror/addon/fold/indent-fold.js')
+require('codemirror/addon/fold/markdown-fold.js')
+require('codemirror/addon/fold/comment-fold.js')
 export default {
+  data(){
+      return {
+        cmOptions: {
+          value: '',
+          // mode: 'text/javascript',
+          theme: 'idea',
+          readOnly: true,
+          lineNumbers: false, // 是否显示行数
+          showCursorWhenSelecting: true,
+        },
+      }
+  },
+  components: {
+    codemirror,
+  },
   mounted () {
     const result = this.maxResult([1, 2, 3, 2, 1, 5, 7, 6])
     console.log(result)
@@ -121,6 +571,47 @@ export default {
     this.minRoute()
   },
   methods: {
+    fblq(n){
+      // 0 1 1 2 3 5 8 13 21
+      function _fblq(i){
+        if(i === 0){
+          return 0
+        }
+        if(i === 1){
+          return 1
+        }
+        if(i === 2){
+          return 1
+        }
+        return _fblq(i-1) + _fblq(i-2)
+      }
+      // for循环实现
+      function _fblq2(i){
+        if(i === 0){
+          return 0
+        }
+        if(i === 1){
+          return 1
+        }
+        if(i === 2){
+          return 1
+        }
+        let last1 = 1
+        let last2 = 1
+        let val = 0
+        for(let j = 0; j < i; j ++){
+          if (j >= 3) {
+            val = last1 + last2
+            last1 = last2
+            last2 = val
+          }
+        }
+        return val
+      }
+
+      return _fblq(n)
+      
+    },
     // 计算不相邻数之和的最大值(还需要缓存优化)
     maxResult(arr){
       function max(arr, i){

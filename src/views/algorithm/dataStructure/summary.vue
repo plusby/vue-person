@@ -774,6 +774,389 @@
                 </pre>
             </el-collapse-item>
         </el-collapse>
+        <h3>15. 连续字符串</h3>
+        <pre>
+            给定一个字符串S,获取其中最长连续字符串的长度
+            eg：
+                aaacd  得到3
+                aabbbbabc 得到4
+                fdsddfffffdsasfdsdff 得到5
+                abshd  得到1
+                ""  得到0
+        </pre>
+        <p>请输入：</p>
+        <input type="text" placeholder="请输入" v-model="continuousStrInput">
+        <button @click="continuousStrBtn">提交</button>
+        <p>结果: {{ continuousStrVal }}</p>
+        <el-collapse  >
+            <el-collapse-item title="答案" name="7">
+                <pre class="code">
+                <codemirror
+                    ref="mycode"
+                    value="
+                        /*
+                            连续字符串
+                            通过指定索引法
+                            1. 遍历字符串，并且遍历要超出字符串的长度
+                            2. 比较当前字符和前面一个字符是否相等
+                            3. 如果不相等表示已经找完了前面相同的字符，通过当前的索引减去上次不相等的索引，
+                            得到相同字符的长度，然后再和保存的最大的字符长度进行比较，这样遍历完就找出了最大相同的字符
+                        */
+                        continuousStrBtn () {
+                            let str = this.continuousStrInput
+                            let j = 0
+                            let max = 0
+                            // 注意等于，否则最后一个判断不了
+                            for(let i = 0; i <= str.length; i ++){
+                                if (str[i] !== str[i-1]) {
+                                    const len = i - j
+                                    if (len > max) {
+                                        max = len
+                                    }
+                                    j = i
+                                }
+                            }
+                            this.continuousStrVal = max
+                        }
+                    "
+                    :options="cmOptions"
+                    class="code"/>
+                </pre>
+            </el-collapse-item>
+        </el-collapse>
+        <h3>16. 验证回文字符串</h3>
+        <pre>
+            给定一个字符串，验证它是否是回文字符串，只考虑数字和字母，可以忽略空格和符号
+            eg:
+                输入："A man, a plan, a canal: Panama"
+                输出： ture
+
+                输入："race a car"
+                输出：false
+
+                输入：""
+                输出：true
+
+                输入：" "
+                输出：true
+
+                输入："1"
+                输出：true
+
+                输入："1a"
+                输出：false
+
+        </pre>
+        <p>请输入：</p>
+        <input type="text" placeholder="请输入" v-model="zyEqualInput">
+        <button @click="zyEqualBtn">提交</button>
+        <p>结果: {{ zyEqualVal }}</p>
+        <el-collapse  >
+            <el-collapse-item title="答案" name="7">
+                <pre class="code">
+                <codemirror
+                    ref="mycode"
+                    value="
+                        /*
+                            验证回文串
+                            1. 定义前后两个指针
+                            2. 判断前后两个字符是否是字母或数字
+                            3. 是的话进行判断是否相等，不相等直接返回false
+                            4. 不是数字或字母向前或向后移动一位指针进行比较
+                            5. 当前后指针相等的时候终止循环
+                        */
+                        zyEqualBtn () {
+                            let leftIndex = 0
+                            let rightIndex = this.zyEqualInput.length-1
+                            while(leftIndex < rightIndex){
+                                let leftVal = isWord(this.zyEqualInput[leftIndex])
+                                let rightVal = isWord(this.zyEqualInput[rightIndex])
+                                if (leftVal && rightVal) {
+                                    if (this.zyEqualInput[leftIndex] !== this.zyEqualInput[rightIndex]) {
+                                        this.zyEqualVal = false
+                                        return false
+                                    } else {
+                                        leftIndex++
+                                        rightIndex--
+                                    }
+                                } else {
+                                    if (!leftVal) {
+                                        leftIndex++
+                                    } else {
+                                        rightIndex--
+                                    }
+                                }
+                            }
+                            this.zyEqualVal = true
+                            return true
+                            // 判断是数字或字母，通过ASCALL码进行比较，字符串的比较就是隐士的ASCALL码比较 数字1-8的ascll码比0的ascall码大比9的小
+                            // 字母也是一样
+                            function isWord(str){
+                                if ((str >= '0' && str <= '9') || (str >= 'a' && str <= 'z') || (str >= 'A' && str <= 'Z')) {
+                                    return true
+                                }
+                                return false
+                            }
+                        },
+                    "
+                    :options="cmOptions"
+                    class="code"/>
+                </pre>
+            </el-collapse-item>
+        </el-collapse>
+        <h3>17. 字符串计算</h3>
+        <pre>
+            给定一个字符串，输出计算结果
+            一个字符串S是一个有效的四则运算表达式，请计算该表达式的值
+
+            示例：
+                '1+2' 得到3
+                '2*(2+3)' 得到10
+                '(15%(5-3)+6)*(2+3)' 得到35
+            
+            字符串s至少包含一个运算符
+            字符串s中的操作数均为数字字面量，但可能包含小数
+
+        </pre>
+        <el-collapse  >
+            <el-collapse-item title="答案" name="7">
+                <pre class="code">
+                <img src="../../../assets/img/com.png" alt="">
+                <img src="../../../assets/img/com33.png" alt="">
+                <codemirror
+                    ref="mycode"
+                    value="
+                       /*
+                        通过栈实现计算
+                        一个栈存放运算符
+                        一个栈存放数字
+
+                        一个运算符的操作对象，用于计算
+
+                        一个获取字符串开头的字符，判断是数字还是运算符的函数
+
+                        如果是数字存入数字栈中
+
+                        如果是运算符，判断运算符的类型
+                            如果是(直接存入运算符栈中
+                            如果是)循环进行计算知道遇到(就结束，
+                            如果当前运算符栈顶是(那么把当前的运算符直接放入运算符栈中
+                            如果当前运算符的优先级大于栈顶运算符的优先级直接放入运算符栈中
+                            否则就进行计算
+
+                       */
+                        // 实现一个栈
+                        function Stack(){
+                            this._datas = []
+                        }
+                        Stack.prototype.push = function(data){
+                            this._datas.push(data)
+                        }
+                        Stack.prototype.pop = function(){
+                            return this._datas.pop()
+                        }
+                        Stack.prototype.getTop = function(data){
+                            return this._datas[this._datas.length-1]
+                        }
+
+
+                        // 创建一个对象，实现属性为运算符进行计算，并且具有优先级
+                        var operators = {
+                            '+': {
+                                level: 1,
+                                compute: function(a,b){
+                                    return a + b
+                                }
+                            },
+                            '-': {
+                                level: 1,
+                                compute: function(a,b){
+                                    return a - b
+                                }
+                            },
+                            '*': {
+                                level: 2,
+                                compute: function(a,b){
+                                    return a * b
+                                }
+                            },
+                            '/': {
+                                level: 2,
+                                compute: function(a,b){
+                                    return a / b
+                                }
+                            },
+                            '%': {
+                                level: 2,
+                                compute: function(a,b){
+                                    return a % b
+                                }
+                            },
+                        }
+
+                        /*
+                            四则运算符扫描器
+                        */
+                        function Scanner(s){
+                            // 取消字符串中所有的空白字符
+                            this.s = s.replace(/\s/g, "")
+                            // 匹配字符串开头的数字
+                            this.numberExp = /^\d+(\.\d+)?/
+                            // 匹配字符串开头的符号
+                            this.opExp = /^[\(\)\+\-\*\%\/]/
+
+                        }
+                        /*
+                            从字符串开头的位置，获取一个符号或者数字
+                        */
+                        Scanner.prototype.next = function(){
+                            if(this.s.length === 0){
+                                return null
+                            }
+                            // 获取字符串开头的数字
+                            const num = this.s.match(this.numberExp)
+                            var result;
+                            // 没有匹配上数字
+                            if(!num){
+                                // 取出符号
+                                result = {
+                                    type: 'operator',
+                                    value: this.s[0]
+                                }
+                                // 去除取出的符号
+                                this.s = this.s.substr(1)
+                            }else{
+                                // 取出数字
+                                result = {
+                                    type: 'number',
+                                    value: +num[0]
+                                }
+                                this.s = this.s.substr(num[0].length)
+                            }
+                            return result
+                        }
+                        var scan = new Scanner('2.5*(2+3)')
+                        console.log(scan.next()) // { type: 'number', value: 2.5}
+                        console.log(scan.next()) // { type: 'operator', value: '*'}
+                        
+                        /*
+                        
+                        运算一个表达式返回一个结果
+                        */
+                        function compute(s){
+                            var numStack = new Stack() // 数字栈
+                            var opStack = new Stack() // 符号栈
+
+                            // 运算
+                            function _compute(){
+                                var top = opStack.getTop()
+                                if(!top){ // 栈顶为空就直接返回
+                                    return
+                                } else if(top === '(') { // 是左括号直接弹出
+                                    opStack.pop()
+                                    return false
+                                } else{ // 否则就是运算符
+                                    opStack.pop() // 弹出符号
+                                    // 弹出两个数字
+                                    var num1 = numStack.pop()
+                                    var num2 = numStack.pop()
+                                    // 通过运算符获取到对应的计算函数进行计算
+                                    const result = operators[top].compute(num2,num1)
+                                    numStack.push(result) // 计算结果存入数字栈中
+                                    return true
+                                }
+                            }
+                            /*
+                                    处理一次操作
+                                    12 + 1 * 2 / 3*(3+4)
+                                */
+                                function _handleOperation(op){
+                                    var topOp = opStack.getTop() // 获取栈顶
+                                    if(op === ')'){ // 遇到),运算到左括号出栈为止
+                                        while(_compute()){}
+                                    } else if ( // 如果符号栈为空，或当期符号是(,或栈顶是(，当期符号优先级高，直接入栈
+                                        !topOp ||
+                                        op === '(' ||
+                                        topOp === '(' ||
+                                        operators[op].level > operators[topOp].level
+                                    ){
+                                        opStack.push(op)
+                                    } else { // 如果当前符号小于等于栈顶符号，运算，递归查看
+                                        _compute() // 运算一次
+                                        _handleOperation(op)
+                                    }
+                                }
+                                
+                                var scancer = new Scanner(s)
+                                var next 
+                                while ((next = scancer.next())) {
+                                    if(next.type === 'number'){
+                                        numStack.push(next.value)
+                                    }else{
+                                        _handleOperation(next.value)
+                                    }
+                                }
+
+                                // 将符号栈清空
+                                while (_compute()) {}
+                                console.log('numStack',numStack,opStack)
+                                return numStack.getTop()
+
+                        }
+                        
+                        const result = compute('2.5*(2+3)')
+                        console.log('result', result)
+                        const result2 = compute('2.5*(2*5+3 -1 *3)/2')
+                        console.log('result2', result2)
+                    "
+                    :options="cmOptions"
+                    class="code"/>
+                </pre>
+            </el-collapse-item>
+        </el-collapse>
+        <h3>18. 区间调度</h3>
+        <pre>
+            有许多[start, end]的闭区间，请设计一个算法，算出这些区间中，最多有几个互不相交的区间？
+            eg:
+                intvs = [[1,3],[2,4],[3,6]]
+
+            这些区间中最多有两个互不相交，[1,3],[3,6]
+
+        </pre>
+        <el-collapse  >
+            <el-collapse-item title="答案" name="7">
+                <pre class="code">
+                <img src="../../../assets/img/com.png" alt="">
+                <img src="../../../assets/img/com33.png" alt="">
+                <codemirror
+                    ref="mycode"
+                    value="
+                      function intervalSchedule(arr){
+                          if (!arr.length) {
+                              return 0
+                          }
+                          // 根据end给数组进行升序
+                          const sortArr = arr.sort((a,b) => a[1] - b[1])
+                          let count = 1
+                          let end = sortArr[0][1]
+                          console.log(sortArr)
+                          for(let item in sortArr){
+                              debugger
+                              const start = item[0]
+                              if (start >= end) {
+                                end = item[1]
+                                count++
+                              }
+                          }
+
+                          return count
+                      }
+                    "
+                    :options="cmOptions"
+                    class="code"/>
+                </pre>
+            </el-collapse-item>
+        </el-collapse>
     </div>
 </template>
 
@@ -792,6 +1175,10 @@ require('codemirror/addon/fold/comment-fold.js')
 export default {
     data(){
         return {
+            zyEqualVal: '',
+            zyEqualInput: '',
+            continuousStrInput: '',
+            continuousStrVal: '',
             cmOptions: {
                 value: '',
                 // mode: 'text/javascript',
@@ -846,6 +1233,71 @@ export default {
         codemirror,
     },
     methods: {
+        /*
+            验证回文串
+            1. 定义前后两个指针
+            2. 判断前后两个字符是否是字母或数字
+            3. 是的话进行判断是否相等，不相等直接返回false
+            4. 不是数字或字母向前或向后移动一位指针进行比较
+            5. 当前后指针相等的时候终止循环
+        */
+        zyEqualBtn () {
+            let leftIndex = 0
+            let rightIndex = this.zyEqualInput.length-1
+            while(leftIndex < rightIndex){
+                let leftVal = isWord(this.zyEqualInput[leftIndex])
+                let rightVal = isWord(this.zyEqualInput[rightIndex])
+                if (leftVal && rightVal) {
+                    if (this.zyEqualInput[leftIndex] !== this.zyEqualInput[rightIndex]) {
+                        this.zyEqualVal = false
+                        return false
+                    } else {
+                        leftIndex++
+                        rightIndex--
+                    }
+                } else {
+                    if (!leftVal) {
+                        leftIndex++
+                    } else {
+                        rightIndex--
+                    }
+                }
+            }
+            this.zyEqualVal = true
+            return true
+            // 判断是数字或字母，通过ASCALL码进行比较，字符串的比较就是隐士的ASCALL码比较 数字1-8的ascll码比0的ascall码大比9的小
+            // 字母也是一样
+            function isWord(str){
+                if ((str >= '0' && str <= '9') || (str >= 'a' && str <= 'z') || (str >= 'A' && str <= 'Z')) {
+                    return true
+                }
+                return false
+            }
+        },
+        /*
+            连续字符串
+            通过指定索引法
+            1. 遍历字符串，并且遍历要超出字符串的长度
+            2. 比较当前字符和前面一个字符是否相等
+            3. 如果不相等表示已经找完了前面相同的字符，通过当前的索引减去上次不相等的索引，
+               得到相同字符的长度，然后再和保存的最大的字符长度进行比较，这样遍历完就找出了最大相同的字符
+        */
+        continuousStrBtn () {
+            let str = this.continuousStrInput
+            let j = 0
+            let max = 0
+            // 注意等于，否则最后一个判断不了
+            for(let i = 0; i <= str.length; i ++){
+                if (str[i] !== str[i-1]) {
+                    const len = i - j
+                    if (len > max) {
+                        max = len
+                    }
+                    j = i
+                }
+            }
+            this.continuousStrVal = max
+        },
         // 单词反转
         revertByWord(){
             /*

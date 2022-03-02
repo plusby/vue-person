@@ -91,9 +91,9 @@
                     可以逆向查找
 
             // 单项链表
-            function Node(val){
+            function Node(val, next){
                 this.value = val
-                this.next = null
+                this.next = next || null
             }
             
             const a = new Node(1)
@@ -159,6 +159,41 @@
                 }
             }
 
+            /**
+            4.4 逆置列表并且生成一个新的链表
+                不改变原有链表
+                
+             */
+
+            function reverse3(root){
+                let list = null
+                while (root) {
+                    // 最关键的在Node构造函数内部，node的next在构造函数内部传递，这样node1对象可以作为新node2对象的next,也可以把node2替换成node1
+                    list = new Node(root.val, list)
+                    root = root.next
+                }
+                return list
+            }
+            console.log(reverse3(a)) // 2, 1
+            console.log(a) // 1, 2
+
+            1. list指向null
+
+            <img src="@img/linear/reverse1.png" alt="">
+
+            2. 创建一个新的node2值为2，node2的next指向null,最后让list指向node2
+
+            <img src="@img/linear/reverse2.png" alt="">
+
+            3. 创建一个新的node1值为1, node1的next指向list也就是指向node2，最后让list指向当前的node1
+
+            <img src="@img/linear/reverse3.png" alt="">
+
+            4. 创建一个新的node3值为3, node3的next指向list也就是指向node1，最后让list指向当前的node3
+
+            <img src="@img/linear/reverse4.png" alt="">
+
+            5. 输出list,就实现了链表的逆置
 
             // 5. 获取链表的长度
             /*
@@ -261,7 +296,85 @@
             n4.next = n3
 
             console.log(n1)
+
+
             
+        </pre>
+
+        <h3>链表的面试题</h3>
+        <pre>
+            给你两个 非空 的链表，表示两个非负的整数。它们每位数字都是按照 逆序 的方式存储的，并且每个节点只能存储 一位 数字。
+            请你将两个数相加，并以相同形式返回一个表示和的链表。
+            你可以假设除了数字 0 之外，这两个数都不会以 0 开头
+            eg:
+                输入：l1 = [2,4,3], l2 = [5,6,4]
+                输出：[7,0,8]
+                解释：342 + 465 = 807.
+
+                输入：l1 = [0], l2 = [0]
+                输出：[0]
+
+                输入：l1 = [9,9,9,9,9,9,9], l2 = [9,9,9,9]
+                输出：[8,9,9,9,0,0,0,1]
+
+            function ListNode(val, next) {
+                this.val = (val===undefined ? 0 : val)
+                this.next = (next===undefined ? null : next)
+            }
+            const a = new ListNode(3)
+            const b = new ListNode(4,a)
+            const c = new ListNode(2,b)
+
+            const d = new ListNode(4)
+            const e = new ListNode(6,d)
+            const f = new ListNode(5,e)
+
+            /**
+            * @param {ListNode} l1
+            * @param {ListNode} l2
+            * @return {ListNode}
+            */
+            var addTwoNumbers = function(l1, l2) {
+                let dummy = new ListNode(-1);
+                let list = dummy
+                let n = 0 // 进位值
+                while(l1 || l2 || n){
+                    let val = 0
+                    if (l1) {
+                        val += l1.val
+                        l1 = l1.next
+                    }
+                    if (l2) {
+                        val += l2.val
+                        l2 = l2.next
+                    }
+                    val += n
+                    n = Math.floor(val/10)
+                    list.next = new ListNode(val%10)
+                    list = list.next
+                }
+                return dummy.next
+            }
+            addTwoNumbers(c,f) // 7 0 8
+
+            解析：按顺序生成新的链表
+            已有链表
+            <img src="@img/linear/addTwoNumbers5.png" alt="">
+            
+            1. 创建一个新的节点node1,定义两个变量list,dummy分别指向node1
+
+                <img src="@img/linear/addTwoNumbers1.png" alt="">
+
+            2. 创建一个新的节点node2,让node1的next指向node2,让list指向node2
+                <img src="@img/linear/addTwoNumbers2.png" alt="">
+
+            3. 创建一个新的几点node3,让node2的next指向node3,让list指向node3
+                <img src="@img/linear/addTwoNumbers3.png" alt="">
+
+            4. 创建一个新的几点node4,让node3的next指向node4,让list指向node4
+                <img src="@img/linear/addTwoNumbers4.png" alt="">
+
+            5. 输出dummy.next便是新链表
         </pre>
 
         <h3>二分搜索(二分查找法)</h3>

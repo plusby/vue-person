@@ -163,6 +163,24 @@ const routesList = [
             path:"/tree",
             component: () => import(/* webpackChunkName: "function2" */ '../views/algorithm/dataStructure/tree'),
           },
+          {
+            label:'插值搜索法',
+            id:'insertSearch',
+            path:"/insertSearch",
+            component: () => import(/* webpackChunkName: "function2" */ '../views/algorithm/dataStructure/interpolation'),
+          },
+          {
+            label:'冒泡排序',
+            id:'bubbling',
+            path:"/bubbling",
+            component: () => import(/* webpackChunkName: "function2" */ '../views/algorithm/dataStructure/bubbling'),
+          },
+          {
+            label:'选择排序',
+            id:'select',
+            path:"/select",
+            component: () => import(/* webpackChunkName: "function2" */ '../views/algorithm/dataStructure/select'),
+          },
         ]
       },
     ]
@@ -304,6 +322,12 @@ const routesList = [
         path:"/sandBox",
         component: () => import(/* webpackChunkName: "function2" */ '../views/javascript/sandBox'),
       },
+      {
+        label:'js垃圾回收机制',
+        id:'garbageCollection',
+        path:"/garbageCollection",
+        component: () => import(/* webpackChunkName: "function2" */ '../views/javascript/garbageCollection'),
+      },
     ]
   },
   {
@@ -328,6 +352,38 @@ const routesList = [
         id:'http',
         path:"/http",
         component: () => import(/* webpackChunkName: "function2" */ '../views/http/http'),
+      },
+    ]
+  },
+  {
+    label:'h5移动端',
+    id:'mobile',
+    path:"/mobile",
+    children:[
+      {
+        label:'移动端适配',
+        id:'adapter',
+        path:"/adapter",
+        component: () => import(/* webpackChunkName: "function1" */ '../views/mobile/adapter'),
+      },
+    ]
+  },
+  {
+    label:'设计模式',
+    id:'designPattern',
+    path:"/designPattern",
+    children:[
+      {
+        label:'策略模式',
+        id:'strategyMode',
+        path:"/strategyMode",
+        component: () => import(/* webpackChunkName: "function1" */ '../views/DesignPattern/strategyMode'),
+      },
+      {
+        label:'单例模式',
+        id:'singleCaseMode',
+        path:"/singleCaseMode",
+        component: () => import(/* webpackChunkName: "function1" */ '../views/DesignPattern/singleCaseMode'),
       },
     ]
   },

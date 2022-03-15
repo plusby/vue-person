@@ -4,6 +4,7 @@ import { prepareRender, getVnode2Template, clearVnode } from './render.js'
 import { vforInit } from './grammer/vfor.js'
 import { mergeObj } from '../utils/ObjectUtils.js'
 import { checkVBind } from './grammer/vbind.js'
+import { checkVOn } from "./grammer/von.js";
 
 export function initMount(Vue){
   Vue.prototype.$mount = function (el) {
@@ -47,6 +48,8 @@ function constructVNode (vm, elm, parent) {
   }
   // 进行v-bind解析
   checkVBind(vm, vnode)
+  // 进行v-on事件解析
+  checkVOn(vm, vnode)
   // 获取当前节点的子节点
   let childs = vnode.nodeType === 0 ? vnode.parent.elm.childNodes: vnode.elm.childNodes
   // 遍历子节点
@@ -91,7 +94,14 @@ function analysisAttr(vm, elm, parent){
   return null
 }
 
+
+/**
+ * 根据属性模板重新构建
+ * @param vm
+ * @param template
+ */
 export function rebuild (vm, template) {
+  debugger
   // 通过属性模板获取到对应的虚拟节点
   const vnodeArr = getVnode2Template(template)
   for (let i = 0 ; i < vnodeArr.length; i++) {
@@ -101,6 +111,7 @@ export function rebuild (vm, template) {
     vnodeArr[i].parent.elm.appendChild(vnodeArr[i].elm)
     // 重新构造虚拟节点
     const result = constructVNode(vm, vnodeArr[i].elm, vnodeArr[i].parent)
+    debugger
     // 重新添加到父级中
     vnodeArr[i].parent.children = [result]
     // 清空模板

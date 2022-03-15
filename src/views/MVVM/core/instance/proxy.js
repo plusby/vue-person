@@ -1,6 +1,7 @@
 
 import { renderData } from './render.js'
 import { rebuild } from './mount.js'
+import {getValue} from "../utils/ObjectUtils.js";
 
 // 给对象设置代理
 function constructObjProxy(vm, obj, nameSpace) {
@@ -25,6 +26,11 @@ function constructObjProxy(vm, obj, nameSpace) {
       },
       set(val){
         obj[key] = val
+        const result = getValue(vm._data, getNameSpace(nameSpace, key))
+        // 是数组就重构
+        if (result instanceof  Array) {
+          rebuild(vm, getNameSpace(nameSpace, key))
+        }
         // 修改对应dom的数据
         renderData(vm, getNameSpace(nameSpace, key))
       }

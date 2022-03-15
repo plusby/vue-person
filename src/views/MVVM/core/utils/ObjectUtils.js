@@ -8,7 +8,6 @@
   if (!obj) {
     return obj
   }
-  debugger
   const names = name.split('.')
   let value = obj
   for (let i = 0; i < names.length; i ++) {
@@ -28,7 +27,7 @@
  * @param {String|number} value 修改的值
  */
 export function setValue(data, props, value){
-  debugger
+
   if (!data) {
     return data
   }
@@ -104,4 +103,16 @@ function cloneArr (obj) {
     newArr[i] = clone(obj[i])
   }
   return newArr
+}
+
+/**
+ * 合并环境变量
+ * @param vm
+ * @param vnode
+ * @returns {返回一个合并之后的对象}
+ */
+export function getEnvAttr(vm, vnode){
+  let result = mergeObj(vm._data, vnode.env)
+  result = mergeObj(result, vm._computed)
+  return result
 }

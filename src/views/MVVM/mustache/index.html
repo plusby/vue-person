@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import temp from './template.js'
+    temp()
+    const data = {
+      students: [
+        {
+          name: '12',
+          list: [
+            '打球'
+          ]
+        },
+        {
+          name: '24',
+          list: [
+            '打懒球'
+          ]
+        }
+      ]
+    }
+    const html = templateObj.render(`<ul>
+      {{#students}}
+      <li>姓名{{ name }}</li>
+      <li>
+        {{#list}}
+        <li>爱好ss{{.}}</li>
+        {{/list}}
+      </li>
+      {{/students}}
+    </ul>`, data)
+
+    document.getElementById('app').innerHTML = html
+  </script>
+</body>
+</html>

@@ -9,6 +9,9 @@
     .red{
       color: red;
     }
+    .blue{
+      color: blue;
+    }
   </style>
 </head>
 <body>
@@ -29,6 +32,15 @@
     v-bind:
     <p v-bind:class="className">v-bind实现</p>
     <p :class="className">v-bind实现</p>
+    <p :class="{blue: content === 'monkey'}">v-bind实现复杂表达式</p>
+    <br>
+    v-on:
+    <p v-on:click="go">绑定点击事件</p>
+    <div>
+      <p v-for="(key,index) in goList">{{key}}</p>
+    </div>
+
+
   </div>
 
   <script type="module">
@@ -43,7 +55,14 @@
         },
         arr: [1,2],
         list: [{name:'夏红',age:12},{name:'大大',age:13}],
-        className: 'red'
+        className: 'red',
+        goList: [],
+      },
+      methods: {
+        go: function (){
+          console.log(this, 'gogo')
+          this.goList = [1,2,3,4,5]
+        }
       }
     })
   </script>

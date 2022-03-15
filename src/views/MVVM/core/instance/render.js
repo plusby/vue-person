@@ -115,6 +115,7 @@ export function renderMixin (Vue) {
 
 // 根据虚拟dom树，渲染出真正的dom
 export function renderNode(vm, vnode){
+
   // 如果是文本节点就获取下面的模板变量和对应的值
   if (vnode.nodeType === 3) {
     const template = vnode2Template.get(vnode)
@@ -122,11 +123,13 @@ export function renderNode(vm, vnode){
       let result = vnode.text
       for (let i = 0; i < template.length; i++) {
         const value = getTemplateValue([vm._data, vnode.env], template[i])
+        console.log('vnode.elm.nodeValue', value, result.replace('{{' + template[i] + '}}', value))
         result = result.replace('{{' + template[i] + '}}', value)
       }
       
       // 修改当前元素的值
       vnode.elm.nodeValue = result
+
     }
   } else if (vnode.nodeType === 1 && vnode.tag === 'INPUT') { // 如果是元素节点 根据元素节点上的属性渲染出对应的值
     let template = vnode2Template.get(vnode)
@@ -165,11 +168,14 @@ function getTemplateValue(originArr, temp) {
  * @param {*} data vue下的data下的数据
  */
 export function renderData(vm, data) {
+
   // 通过模板变量找到使用了这个模板变量的node节点
   const nodeArr = template2Vnode.get(data)
   if (!nodeArr) {
     return
   }
+  debugger
+  console.log('nodeArr', nodeArr)
   for (let i = 0; i < nodeArr.length; i ++) {
     // 把node节点渲染成真正的dom
     renderNode(vm, nodeArr[i])

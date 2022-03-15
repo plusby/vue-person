@@ -16,8 +16,20 @@ export function initMixin(Vue){
     }
     
     // 初始化created方法
-    // 初始化mounted方法
+    if (options && options.created) {
+      options._created = options.created
+    }
+    // 初始化methods方法
+    if (options && options.methods) {
+      vm._methods = options.methods
+      for (const vmKey in options.methods) {
+        vm[vmKey] = options.methods[vmKey]
+      }
+    }
     // 初始化computed
+    if (options && options.computed) {
+      options._computed = options.computed
+    }
     // 初始化el并挂载
     if (options && options.el) {
       const dom = document.getElementById(options.el)

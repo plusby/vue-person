@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    const PENDING = 'PENDING'
+    const FULFILLED = 'FULFILLED'
+    const REJECT = 'REJECT'
+    class MPromise {
+      constructor(fn){
+        this.fulfilledList = []
+        this.rejectList = []
+        // 当前值
+        this.value = null
+        // 当前状态
+        this.status = PENDING
+        try{ // promise中的错误都要reject出来
+           // fn是同步的执行
+          fn(this.resolve.bind(this), this.reject.bind(this))
+        }catch(err){
+          this.reject(err)
+        }
+       
+      }
+
+      // resolve方法
+      resolve (value) {
+        if (this.status === PENDING) {
+          this.value = value
+          this.status = FULFILLED
+          this.fulfilledList.forEach(element => {
+            element()
+          });
+        }
+       
+      }
+      // reject方法
+      reject(reason){
+        if (this.status === PENDING) {
+          this.value = reason
+          this.status = REJECT
+          this.rejectList.forEach(element => {
+            element()
+          });
+        }
+      }
+      // then方法
+      then (onFulfilled, onRejected) {
+        // 如果不是一个函数就忽略掉，重新赋值一个函数
+        onFulfilled = this.isFunction(onFulfilled) ? onFulfilled : (value) => { return value }
+        onRejected = this.isFunction(onRejected) ? onRejected : (reason) => { throw reason } // 抛出错误，try catch捕获到放在新的promise的reject中返回
+        let promise3 = null
+        promise3 = new MPromise((resolve, reject) => {
+          // 获取onFulfille或onRejected的执行结果
+          const onFulfilledMicrotask = () => {
+            queueMicrotask(() => {
+              try {
+                const x = onFulfilled(this.value)
+                this.resolvePromise(promise3, x, resolve, reject)
+              } catch (error) {
+                reject(error)
+              }
+            })
+          }
+          const onRejectedMicrotask = () => {
+            queueMicrotask(() => {
+              try {
+                const x = onRejected(this.value)
+                this.resolvePromise(promise3, x, resolve, reject)
+              } catch (error) {
+                reject(error)
+              }
+            })
+          }
+          switch(this.status){
+            case FULFILLED:
+              onFulfilledMicrotask()
+              break
+            case REJECT:
+              onRejectedMicrotask()
+              break
+            case PENDING: // 异步存储回调函数，等到resolve或reject触发的时候再执行
+              this.fulfilledList.push(onFulfilledMicrotask)
+              this.rejectList.push(onRejectedMicrotask)
+          }
+        })
+        return promise3
+      }
+
+      isFunction (fn) {
+        return  typeof fn === 'function' 
+      }
+
+      // 处理onFulfilled和onRejected函数执行的结果
+      resolvePromise(p2, x, resolve, reject) {
+        // p2 === x 抛出异常不能为同一个promise实例
+        if (p2 === x) {
+          throw '异常不能为同一个promise实例'
+          return
+        }
+        if (x instanceof MPromise) {
+          // 放入微任务中执行
+          queueMicrotask(() => {
+            x.then(res => {
+              return resolve(res)
+            }, err => { // 错误直接抛出
+              return reject(err)
+            })
+          })
+        } else if (typeof x === 'object' || typeof x === 'function') {
+          if (x === null) {
+            return resolve(x)
+          } else {
+            let then = null
+            try {
+              then = x.then
+            } catch (error) {
+              return reject(error)
+            }
+            if (this.isFunction(then)) {
+              try {
+                then.call(x, (res) => {
+                  resolve(res)
+                }, err => {
+                  reject(err)
+                })
+              } catch (error) {
+                reject(error)
+              }
+            } else { // 不是函数就直接返回x
+              return resolve(x)
+            }
+          }
+        } else { // 
+          return resolve(x)
+        }
+      }
+      
+      catch (fn) {
+        return this.then(null, fn)
+      }
+      // 直接在构造器上访问的resolve方法属于静态方法
+      /**
+       * Promise.resolve('1')
+      */
+      static resolve (val) {
+        // 如果val是promise直接返回
+        if (val instanceof MPromise) {
+          return val
+        }
+        // 否则就返回一个新的promise
+        return new MPromise((resolve, reject) => {
+          resolve(val)
+        })
+      }
+      static reject (val) {
+        // 否则就返回一个新的promise
+        return new MPromise((resolve, reject) => {
+          reject(val)
+        })
+      }
+      // all方法 参数必须是一个数组，数组中可以是promise也可以是其他类型
+      static all (arr) {
+        return new MPromise((resolve, reject) => {
+          if (!Array.isArray(arr)) {
+            return new Error('参数必须是一个函数')
+          }
+          const len = arr.length
+          let count = 0
+          const res = []
+          // for循环遍历数组的每一项，因此每一项都会被执行
+          for (let i = 0; i < len; i++) {
+            MPromise.resolve(arr[i]).then((val) => {
+              debugger
+              console.log(val, count, len)
+              // 这里根据下标赋值，是因为all返回的成功值是按照arr的顺序返回对应的值
+              res[i] = val
+              count++
+              if (count === len) {
+                resolve(res)
+              }
+            }).catch(err => {
+              reject(err)
+            })
+          }
+        })
+      }
+    }
+
+    // const p1 = new MPromise((res, rej) => {
+    //   res(2)
+    // })
+    
+    // const p = new MPromise((res, rej) => {
+    //   setTimeout(() => {
+    //     res(1)
+    //   },2000)
+      
+    // }).then(res => {
+    //   console.log(res) // 1
+    //   // return p1
+    //   return function () {
+    //     return this
+    //   }
+    // },err => { console.log(err) })
+    // console.log(p)
+    // p.then(res => {
+    //   console.log(res()) // 2
+    // },err => {
+    //   console.log(err)
+    // }).catch(err => {
+    //   console.log(err)
+    // })
+    // console.log(p1 === p) // false
+
+    // const p2 = new MPromise((res, rej) => {
+    //   setTimeout(() => {
+    //     rej(1)
+    //   },2000)
+    // }).then(res => {
+   
+    // }).catch(err => {
+    //   console.log(err)
+    // })
+
+    // 面试题，下面输出什么
+    // const p = new MPromise((res,rej) => {
+    //   setTimeout(() => {
+    //     rej(1)
+    //   },3000)
+    // }).then(null, err => {
+    //   console.log(p)
+    // }).catch(err => {
+    //   console.log(err) // null
+    //   console.log(p) // status => pending
+    // })
+
+    // setTimeout(() => {
+    //   console.log(p) // status => fulfilled
+    // },5000)
+
+    // promise all测试
+    // const p1 = new MPromise(res => {
+    //   res(1)
+    // })
+    // const p2 = new MPromise((res, rej) => {
+    //   //rej('err'+2)
+    //   res(2)
+    // })
+    // const p3 = new MPromise(res => {
+    //   res(3)
+    // })
+    // const p4 = 444
+
+    // MPromise.all([p1,p2,p3,p4]).then(res => {
+    //   console.log(res)
+    // }, err => {
+    //   console.log('all err', err)
+    // })
+
+    const p1 = new Promise(res => {
+      res(1)
+    })
+    const p2 = new Promise((res, rej) => {
+      //rej('err'+2)
+      setTimeout(() => {
+        res(2)
+      },2000)
+    })
+    const p3 = new Promise(res => {
+      res(3)
+    })
+    const p4 = 444
+
+    Promise.all([p1,p2,p3,p4]).then(res => {
+      console.log(res)
+
+    }, err => {
+      console.log('all err', err)
+    })
+   
+  </script>
+</body>
+</html>

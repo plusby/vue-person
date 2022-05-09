@@ -202,6 +202,12 @@ const routesList = [
         path:"/httpCompress",
         component: () => import(/* webpackChunkName: "function1" */ '../views/performance/http-compress'),
       },
+      {
+        label:'浏览器原理',
+        id:'browser',
+        path:"/browser",
+        component: () => import(/* webpackChunkName: "function1" */ '../views/performance/browser'),
+      },
     ]
   },
   {
@@ -251,6 +257,19 @@ const routesList = [
         id:'InterviewQuest',
         path:"/InterviewQuest",
         component: () => import(/* webpackChunkName: "function2" */ '../views/interviewQuest/index'),
+      },
+    ]
+  },
+  {
+    label:'模块化',
+    id:'module',
+    path:"/module",
+    children:[
+      {
+        label:'模块化',
+        id:'module',
+        path:"/module",
+        component: () => import(/* webpackChunkName: "function2" */ '../views/module/index'),
       },
     ]
   },
@@ -308,6 +327,12 @@ const routesList = [
         id:'setMap',
         path:"/setMap",
         component: () => import(/* webpackChunkName: "function2" */ '../views/es678/setMap'),
+      },
+      {
+        label:'Promise',
+        id:'Promise',
+        path:"/Promise",
+        component: () => import(/* webpackChunkName: "function2" */ '../views/es678/Promise'),
       },
     ]
   },

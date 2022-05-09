@@ -143,7 +143,7 @@
                     const imgData = await this.fileToUrl(options.file)
                     console.log('文件转为图片数据',imgData,imgData.naturalWidth)
                     // 压缩图片
-                    const compressedImg = await this.canvasToImg(imgData,'Blob',options.width,options.height,options.type,options.quality)
+                    const compressedImg = await this.canvasToImg(imgData,'Blob',options.width,options.height,options.file.type,options.quality)
                     // 上传到服务器
                     console.log('compressedImg',compressedImg,compressedImg.size)
                     console.log('压缩之前大小',options.file.size,'压缩之后大小',compressedImg.size,'压缩率', compressedImg.size/options.file.size)
@@ -173,7 +173,7 @@
                     })
                 },
                 // 压缩图片
-                canvasToImg(img,type,w,h,imgType,quality){
+                canvasToImg(img,type,w,h,imgType,quality, file){
                     return new Promise((res)=>{
                         const canvas = document.createElement('canvas')
                         var ctx = canvas.getContext('2d')
@@ -186,11 +186,23 @@
                             }, imgType || 'image/jpeg', quality || 0.8);
                         }else {
                             const compressImg = canvas.toDataURL(imgType||'image/jpeg',quality||0.8)
-                            res(compressImg)
+                            const a = dataURItoFile(compressImg, file.name)
+                            res(a)
                         }
                     })
-                    
-                    
+                }
+
+                // 
+                function dataURItoFile (dataurl, name) {
+                    var arr = dataurl.split(',')
+                    var mime = arr[0].match(/:(.*?);/)[1]
+                    var bstr = atob(arr[1])
+                    var n = bstr.length
+                    var u8arr = new Uint8Array(n)
+                    while (n--) {
+                        u8arr[n] = bstr.charCodeAt(n)
+                    }
+                    return new File([u8arr], name, { type: mime })
                 }
             }
         </pre>

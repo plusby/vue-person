@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  
+
+  <script type="module">
+    import observe from './observe.js'
+    import Watcher from './watcher.js'
+    const data = {
+      a: 1,
+      b: {
+        c: {
+          d: 4
+        }
+      },
+      //arr: [1,2,3]
+    }
+    observe(data)
+    // data.arr.push(88)
+    // data.arr.push(99)
+    new Watcher(data, 'b.c.d',  (val, old)=> {
+      console.log('val, old', val, old)
+    })
+    data.b.c.d = 999
+    console.log(data)
+  </script>
+</body>
+</html>

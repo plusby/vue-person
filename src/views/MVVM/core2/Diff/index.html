@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div id="app"></div>
+  <button>更新</button>
+  <script type="module">
+    import h from './h.js'
+    import patch from './patch.js'
+    // const b = h('div', { class: '1'}, '字符串')
+    // const b = h('div', { class: '2'}, '789')
+    // 新列表中新增元素
+    // const b = h('div', { class: '3'}, [
+    //   h('p', { key: 1 }, 'a'),
+    //   h('p', { key: 2 }, 'b')
+    // ])
+    // const c = h('div', { class: '3'}, [
+    //   h('p', { key: 1 }, 'a'),
+    //   h('p', { key: 2 }, 'b'),
+    //   h('p', { key: 3 }, 'c')
+    // ])
+    // 新列表中删除元素
+    // const b = h('div', { class: '3'}, [
+    //   h('p', { key: 1 }, 'a'),
+    //   h('p', { key: 2 }, 'b'),
+    //   h('p', { key: 3 }, 'c')
+    // ])
+    // const c = h('div', { class: '3'}, [
+    //   h('p', { key: 1 }, 'a'),
+    //   h('p', { key: 3 }, 'c')
+    // ])
+    // 复杂情况倒置元素
+    // const b = h('div', { class: '3'}, [
+    //   h('p', { key: 1 }, 'a'),
+    //   h('p', { key: 2 }, 'b'),
+    //   h('p', { key: 3 }, 'c')
+    // ])
+    // const c = h('div', { class: '3'}, [
+    //   h('p', { key: 3 }, 'c'),
+    //   h('p', { key: 2 }, 'b'),
+    //   h('p', { key: 1 }, 'a'),
+    //   h('p', { key: 4 }, 'd'),
+    // ])
+    // 删除并新增节点
+    // const b = h('div', { class: '3'}, [
+    //   h('p', { key: 1 }, 'a'),
+    //   h('p', { key: 2 }, 'b'),
+    //   h('p', { key: 3 }, 'c')
+    // ])
+    // const c = h('div', { class: '3'}, [
+    //   h('p', { key: 3 }, 'c'),
+    //   h('p', { key: 4 }, 'd'),
+    // ])
+    // 删除节点并更新节点
+    // const b = h('div', { class: '3'}, [
+    //   h('p', { key: 1 }, 'a'),
+    //   h('p', { key: 2 }, 'b'),
+    //   h('p', { key: 3 }, 'c'),
+    //   h('p', { key: 4 }, 'd')
+    // ])
+    // const c = h('div', { class: '3'}, [
+    //   h('p', { key: 3 }, 'ccc'),
+    // ])
+    // 插入节点并更新节点
+    const b = h('div', { class: '3'}, [
+      h('p', { key: 1 }, 'a'),
+      h('p', { key: 2 }, 'b'),
+      h('p', { key: 3 }, 'c'),
+      h('p', { key: 4 }, 'd')
+    ])
+    const c = h('div', { class: '3'}, [
+      h('p', { key: 2 }, 'b'),
+      h('p', { key: 3 }, 'c'),
+      h('p', { key: 5 }, 'ff'),
+      h('p', { key: 4 }, 'd'),
+      h('p', { key: 6 }, '666'),
+      h('p', { key: 1 }, 'a'),
+    ])
+
+    const btn = document.getElementsByTagName('button')[0]
+    const app = document.getElementById('app')
+    patch(app, b)
+    btn.onclick = function () {
+      debugger
+      patch(b,c)
+    }
+
+  </script>
+</body>
+</html>

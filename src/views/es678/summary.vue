@@ -687,6 +687,574 @@
               generator.next() // { value: 1, done: false}
               generator.next() // { value: 2, done: false}
 
+            应用：
+              实现一个执行生成器的函数
+              // 生成器函数
+              function *task(){
+                // 参数
+                const a = yield { id: 11 } 
+                // 请求接口
+                const res = yield getList('https://XXX', a)
+                // 处理结果
+                const result = yield dealRes(res)
+                // 返回结果
+                return result
+              }
+              run(task)
+
+              // 执行函数
+              function run(generatorFunc){
+                const generator = generatorFunc()
+                let result = generator.next() // 开始执行
+                handle()
+                function handle(){
+                  // 如果没有了就返回
+                  if (result.done) {
+                    return
+                  }
+                  // 如果值的then是一个函数，表示是一个promise
+                  if (typeof result.value.then === 'function') {
+                    // 执行then
+                    result.value.then(res => {
+                      // 把结果传递进入
+                      result = generator.next(res)
+                      // 递归执行
+                      handle()
+                    },err => {
+                      // 抛出错误
+                      result = generator.throw(err)
+                      // 递归执行
+                      handle()
+                    })
+                  } else { // 不是promise就继续执行
+                    result = generator.next(result.value)
+                    // 递归执行
+                    handle()
+                  }
+                }
+              }
+
+          set 集合
+            存储不重复的数据，Set是可迭代对象，因此具有迭代对象的特性
+
+            如何创建set集合
+            // 创建一个空的set集合
+            const s1 = new Set()
+
+            // 创建一个带有初始值的集合, 参数必须是一个可迭代的对象
+            const s2 = new Set([1,2,3,4]) // {1,2,3,4}
+            const s3 = new Set('123321') // {1,2,3}
+
+            Set方法：
+              add(str) 
+                给set添加数据, 参数只有一个，如果添加已有的数据，不进行任何操作
+                add内部使用的Object.is方法来判断数据是否一样，但是对于+0和-0,add做了单独处理，add认为+0,-0不一样
+                认为它们是相同的
+
+              has(str)
+                判断集合中是否有这个数据
+              
+              delete(str)
+                删除指定的数据，返回是否删除成功
+              
+              clear()
+                清空set集合
+
+              forEach(callBack)
+                遍历Set集合
+
+            属性
+              size
+                只读，获取Set长度
+              
+            遍历集合
+              for of遍历，因为它是迭代对象
+
+              forEach遍历，因为Set没有下标，因此forEach中第一个和第二个参数是一样都表示值
+            
+            注意：
+              set集合中不存在下标
+
+            和数组进行相互转换
+              // 数组转成Set
+              const s = new Set(arr)
+              // Set转成数组，Set是迭代对象，因此可以通过扩展运算符
+              const arr = [...s]
+
+            应用:
+              数组和字符串的去重
+              // 数组去重
+              const arr1 = [...new Set(arr)]
+              // 字符串去重
+              const arr2 = [...new Set(str)]
+              const str2 = arr2.join('')
+
+              获取两个数组的并集
+              const arr1 = [1,2,3,4]
+              const arr2 = [1,4,5,6]
+              const arr = [...new Set([...arr1,...arr2])] // [1, 2, 3, 4, 5, 6]
+
+              获取两个数组的交集
+              const arr1 = [1,2,3,4,1,2]
+              const arr2 = [1,4,5,6]
+              const s2 = new Set(arr2)
+              const result = [...new Set(arr1)].filter(item => {
+                return s2.has(item) // arr2.indexOf(item)
+              })
+              result // [1, 4]
+
+              获取两个数组之间的差集
+              const result = [...new Set(arr1),...new Set(arr2)].filter(item => {
+                // arr1有的arr2没有，或arr1没有的arr2有
+                return (arr1.indexOf(item) === -1 && arr2.indexOf(item) !== -1) || (arr1.indexOf(item) !== -1 && arr2.indexOf(item) === -1)
+              })
+              result // [2, 3, 5, 6]
+
+            实现一个Set
+
+              class MySet{
+                constructor(iterator = []){
+                  // 判断是否是可迭代对象
+                  if (typeof iterator[Symbol.iterator] !== 'function') {
+                    throw new TypeError('参数不是一个可迭代对象')
+                  }
+                  this._data = []
+                  for (const item of iterator) {
+                    this.add(item)
+                  }
+                }
+
+                add (item) {
+                  if (!this.has(item)) {
+                    this._data.push(item)
+                  }
+                  return this._data
+                }
+
+                has (item) {
+                  for (const data of this._data) {
+                    if (this.isEqual(data, item)) {
+                      return true
+                    }
+                  }
+                  return false
+                }
+
+                delete (item) {
+                  let flag = false
+                  this._data = this._data.filter(val => {
+                    const result = this.isEqual(val, item)
+                    if (result) {
+                      flag = true
+                    }
+                    return !result
+                  })
+                  <!-- for (let i = 0; i < this._data.length; i ++) {
+                    if (this.isEqual(this._data[i], item)) {
+                      this._data.splice(i,1)
+                      return true
+                    }
+                  } -->
+                  return flag
+                }
+
+                clear () {
+                  this._data = []
+                }
+                // 通过生成器实现迭代器
+                *[Symbol.iterator]() {
+                  for (const item of this._data) {
+                    yield item
+                  }
+                }
+
+                forEach (callBack) {
+                  for (const item of this._data) {
+                    callBack(item, item, this._data)
+                  }
+                }
+
+                get size(){
+                  return this._data.length
+                }
+
+                isEqual(item,item2){
+                  // 单独处理0,-0和+0是不相等
+                  if (item === 0 && item2 === 0) {
+                    return true
+                  }
+                  return Object.is(item,item2)
+                }
+              }
+
+              const ss = new MySet([1,2,3])
+              ss.size // 3
+
+          map集合 
+            用来存储键值对数据,键是唯一的，并且可以是任意类型
+
+            解决了对象存储键值对的问题：
+              1. 键名只能是字符串或Symbol符号
+              2. 获取数据的长度不方便
+
+            创建map
+              通过Map构造函数创建map对象，并且map对象是可迭代的
+              // 创建一个空的map对象
+              new Map()  
+              // 创建一个具有初始值的map对象，传递一个可迭代对象，并且这个迭代对象中的每一项
+              // 都是一个长度为2的数组，第一项为键，第二项为值
+              new Map([{a:1}, ['b', 2]]) // {undefined => undefined, 'b' => 2}
+
+              // 创建一个对象，并且转换为可迭代的对象
+              const obj = {
+                a: 1,
+                [Symbol.iterator]: function *() {
+                  for(const key in this){
+                    yield this[key]
+                  }
+                }
+              }
+              for (const key of obj) {
+                console.log(key) // 1
+              }
+              // 迭代对象的每一项必须是数组如果是一个对象并且是可迭代的也是不可以
+              new Map([obj, ['b', 2]]) // {undefined => undefined, 'b' => 2}
+
+            Map的属性
+              size: 
+                只读，获取集合的长度
+
+            map的方法：
+              set(键,值):
+                设置一个键值对，键和值可以是任何类型
+                如果键不存在就添加，如果键已经存在，就修改
+              
+                const m1 = new Map([[{},1],['a', 2]])
+                m1.set({},3)
+                console.log(m1) // {{…} => 1, 'a' => 2, {…} => 3}
+              
+              get(键)
+                获取一个指定键的值，不存在的键就是undefined
+
+              delete(键)
+                删除一个键 
+              
+              has(键)
+                查看指定的键是否存在
+              
+              clear()
+                清空 
+              
+            和数组之间的转换 
+              map转数组 
+                const m1 = new Map([['a', 1], ['b', 2], ['b', 3]])
+                const arr = [...m1] // [['a', 1], ['b', 3]]
+
+              数组转map
+                const arr = [['a', 1], ['b', 2], ['b', 3]]
+                const m1 = new Map(arr) // {'a' => 1, 'b' => 3}
+              
+            遍历map
+              for-of: 
+                每次迭代得到都是一个长度为2的数组
+              forEach: 
+                参数1：每项的值 
+                参数2：每项的键 
+                参数3：map自身 
+              
+          手撕map
+            class MyMap{
+              constructor(iterator){
+                if (typeof iterator[Symbol.iterator] !== 'function') {
+                  throw new TypeError('参数必须是一个可迭代对象')
+                }
+                this._datas = []
+                // 遍历这个iterator
+                for (const item of iterator) {
+                  if (typeof item[Symbol.iterator] !== 'function') {
+                    throw new TypeError( item + '必须是一个可迭代对象')
+                  }
+                  const obj = item[Symbol.iterator]()
+                  const key = obj.next().value 
+                  const value = obj.next().value 
+                  this.set(key, value)
+                }
+              }
+
+              set(key, value){
+                const result = this.getItem(key)
+                if (result !== false) {
+                  this._datas[result].value = value
+                  return this._datas
+                }
+                this._datas.push({
+                  key,
+                  value
+                })
+                return this._datas
+              }
+
+              getItem (key) {
+                for (let i = 0; i < this._datas.length; i++) {
+                  if (key === this._datas[i].key) {
+                    return i
+                  }
+                }
+                return false
+              }
+
+              has(key){
+                return this.getItem(key) === false ? false : true
+              }
+
+              get(key){
+                const result = this.getItem(key)
+                if (result !== false) {
+                  return this._datas[result].value
+                }
+                return undefined
+              }
+
+              delete(key){
+                const result = this.getItem(key)
+                if (result !== false) {
+                  this._datas.splice(result,1)
+                  return true
+                }
+                return false
+              }
+
+              clear(){
+                this._datas.length = 0
+              }
+              get size(){
+                return this._datas.length
+              }
+
+              forEach(callBack){
+                for (let i = 0; i < this._datas.length; i++) {
+                  const item = this._datas[i]
+                  callBack(item.value, item.key, this._datas)
+                }
+              }
+
+              *[Symbol.iterator](){
+                for(const val of this._datas){
+                  yield val
+                }
+              }
+            }
+            const m = new MyMap([[1,1],['a',2]])
+            m.set(1,5) // [{1:5}, {'a':2}]
+            m.has(1) // true
+            m.delete(2) // true
+            m.size // 1
+            m.get(1) // 5
+            m.forEach((a,b,c) => {
+                console.log(a,b,c) // 5 1 [{1:5}]
+            })
+
+          WeakSet
+            和Set一样的功能，weakSet的成员值是唯一的，并且 WeakSet 的成员只能是对象
+
+            WeakSet集合中对象的引用为弱引用。 如果没有其他的对 WeakSet中对象的引用，那么这些对象会被当成垃圾回收掉
+
+            WeakSet不是可迭代对象，因此不能遍历，没有size，forEach
+
+            let obj = { a: 1}
+            const s = new Set()
+            s.add(obj)
+            obj = null // 清空指向
+            s.has(obj) // false
+
+            let obj2 = { a: 2} 
+            const ws = new WeakSet()
+            ws.add(obj2)
+            obj2 = null 
+            ws.has(obj2) //false 
+
+            应用： 可以调试一个对象是否被完全释放
+
+          WeakMap
+            和map一样的功能， WeakMap中的键是唯一的并且只能是对象
+
+            WeakMap集合中的键是弱引用，如有没有其他变量对这个键有引用，那么就会被垃圾回收掉
+
+            WeakMap是不可迭代的对象，不可遍历，没有size和forEach方法
+
+          Reflect反射
+            Reflect是一个内置的js对象，它提供了一系列的方法，通过调用这些方法可以访问js底层的功能
+
+            es6贯穿的理念是暴露些底层的实现方法，因此需要把它们提取出来形成 
+            一个正常的API，并且聚合到Reflect对象上
+
+            常用API: 
+              Reflect.set(obj, 属性key, 值)
+              给对象设置值 
+
+              Reflect.get(对象，属性key) 
+              获取对象的值 
+              Reflect.apply(fn, 调用的对象, argus)
+              指定对象执行函数 
+              Reflect.deleteProperty(obj, key) 
+              删除对象上的属性 
+              Reflect.defineProperty(obj, key, 配置对象)
+              给对象的属性添加描述
+              Reflect.constructor(fn, argus)
+              调用构造函数的方式创建对象 
+              Reflect.has(obj, key) 
+              判断对象中是否有这个属性和in是一样的 
+
+            作用：有助于实现函数式编程，无需通过=,new等语法进行操作，直接通过.方法的形式；有助于了解Proxy代理对象中能够代理的方法 
+
+          Proxy代理 
+            提供了修改底层实现的方式 
+
+            new Proxy(target, handler)
+            tareget: 代理的对象
+            handler: 要代理的属性,属性为Reflect中的所有api
+            返回一个代理对象 
+
+            const obj = {
+              a: 1
+            }
+
+            const proxyObj = new Proxy(obj, {
+              set(target, key, value){ // 代理修改属性的方法
+                console.log(target, key, value)
+                target[key] = value 
+              },
+              get(target, key){ // 代理获取的方法
+                if (Reflect.has(target, key)) {
+                  return Reflect.get(target, key)
+                }
+                return -1
+              }
+            })
+
+            proxyObj.a = 2
+
+            观察者模式
+              观察一个对象的变化 
+
+              // 创建一个观察者
+              function observer(target){
+                // const ob = {} 
+                // 通过Object.defineProperty实现
+                // const pros = Object.keys(target)
+                // for(const key of pros){
+                  // 代理对象上的属性
+                  // Object.defineProperty(ob, key, {
+                  //  enumerable: true,
+                  //  set(newVal){ // 观察对象身上的属性
+                  //    target[key] = newVal
+                  //    render()
+                  //  },
+                  //  get(){
+                  //    return target[key]
+                  //  },
+                  // })
+                // }
+                // 通过Proxy代理 
+                const ob = new Proxy(target, {
+                  set(obj, key, value){
+                    Reflect.set(obj, key, value)
+                    render()
+                  },
+                  get(obj, key){
+                    return Reflect.get(obj, key)
+                  }
+                })
+                render()
+                // 根据观察者触发修改模板
+                function render() {
+                  let html = ''
+                  for(const key of Object.keys(ob)){
+                    html += `<p>${key}: ${ob[key]}</p>`
+                  }
+                  document.getElementByElement('html')[0].innerHTML = html
+                }
+
+
+                return ob
+              }
+
+            和Object.defineProperty的区别？ 
+              Object.defineProperty只能代理取和写并且需要创建一个中间对象进行操作
+              Proxy可以代理Reflect对象上的所有的方法，无需额外的对象，只返回一个代理对象
+
+            
+            数组中新增的方法 
+              Array.of(值)
+                创建一个指定值的数组
+                和new Array(值)构造函数的区别？ 
+                  如果new Array(1)表示创建长度为1的一个空数组；  
+                  Array.of(1)表示创建一个数组，其中一项为1 
+
+              Array.from(可迭代的对象)
+                把可迭代的对象转换成数组
+
+                Array.from('21') // ['21']
+
+              find((item,index) => { return true|false}) 
+                查找返回true的值
+                和filter的区别？
+                  filter查找所有返回true的项并且是一个新的数组
+                  find只查找第一个返回为true的项不是一个数组 
+                一般用于查找对象 
+              
+              fill(值)
+                填充数组的每一项为指定的值
+
+              copyWithin(开始覆盖位置，开始复制的位置，结束复制的位置)
+                复制指定位置区域的数组中的一段进行覆盖指定位置的值
+              
+              includes(值)  es7方法
+                查找数组中是否包含指定值，返回布尔值
+
+              
+            类型数组eg
+             和数组一样用来存储数据，但是数组的每一项是通过64位二进制进行存储，而类型数组，可以选择不同的位数二进制进行存储，
+             这样可以根据不同的数据选择不同的类型数组进行存储而节约存储空间
+
+              eg: 
+                一张大小为100*117的图片，总共需要占据11700个像素，每个像素需要四个元素(红，绿，蓝，透明度)来进行绘制，因此需要 
+                一个长度为11700*4=46800的普通数组来进行存储，需要的二进制数量为46800*64=2995200，需要的的总字节为 2995200/8=374400, 
+                需要的总kb为 374400 / 1024 = 365kb； 
+                如果使用类型化数组，每个元素(红，绿，蓝，透明度)的范围为0-255,因此选择Uint8Array来进行存储，因为它的每项存储范围是0-2^8， 
+                因此它需要的二进制数量为46800*8=374400，需要的总字节为374400/8=46800，需要的总kb为46800/1024=45kb;
+                因此存储数据通过选择适合的类型化数组进行存储，可以节省很多内存
+
+
+                每8位二进制表示一个字节
+                一kb等于1024字节
+
+                int8Array: 每位使用8位二进制来进行存储，范围 -2^8 到 2^8-1
+                Uint8Array: 没有符号的，每位使用8位二进制来进行存储，范围 0 到 2^8-1
+                int16Array: ... 
+                Uint16Array: ... 
+                int32Array: ... 
+                Uint32Array: ... 
+                int64Array: ... 
+                Uint64Array: ... 
+
+                ArrayBuffer: 
+
+
+              
+              
+
+
+
+
+
+
+              
+
+
+
+
+
             
 
           
@@ -715,8 +1283,8 @@
             在数组上应用 for..in 循环有时会产生出人意料的结果，因为这种枚举不 仅会包含所有数值索引，
             还会包含所有可枚举属性。最好只在对象上应用 for..in 循环，如果要遍历数组就使用传统的 for 循环来遍历数值索引
           
-          Object.keys( myObject )
-            获取的是可枚举的属性
+          Object.keys( myObject )| Object.values(obj)
+            获取的是可枚举的属性/值
           
           Object.getOwnPropertyNames()
             获取的所有的属性，不管是否可枚举
@@ -796,6 +1364,12 @@
             })
             g // { z:666}
 
+            获取属性的描述符
+            Object.getOwnPropertyDescripyor(对象,属性)
+
+            获取对象的所有属性的描述符
+            Object.getOwnPropertyDescripyors(对象)
+
             修改原型上的属性，最好不要通过子对象进行修改，因为可能会给子对象创建这个属性，而没有修改到原型上的属性
             const a = {
               b: 1
@@ -809,6 +1383,143 @@
             a // { b:1 } 
             // 最好直接修改原型
             a.b++
+
+            组合继承
+            function A(name){
+              this.name = name
+            }
+            function B(name, age){
+              // 构造函数实现属性的继承
+              A.call(this, name)
+              this.age = age
+            }
+            // 原型实现方法的继承
+            // 方式一：错误的原型继承，直接继承，这样修改B的原型会影响到A的原型
+            B.prototype = A.prototype
+            // 正确写法：通过创建对象和原型的方式
+            B.prototype = Object.create(A.prototype)
+
+            // 方式二：错误的原型继承，通过构造函数直接继承,这样继承会有副作用，
+            // 比如如果函数A有一些副作用（比如写日志、修改状态、注 册到其他对象、给 this 添加数据属性，等等）的话，就会影响到 B() 的“后代
+            // A的函数中this.name则会影响B的实例，可能b的实例上没有name,但是原型上有因此可以通过原型找到
+            B.prototype = new A()
+            // 正确方式：创建一个中间纯函数
+            function C(){}
+            // 原型的继承
+            C.prototype = A.prototype
+            // 实现b的原型继承自c,c的原型就是A的原型，从而达到继承
+            B.prototype = new C()
+
+            // 方式三：通过es6的Object.setPrototypeOf
+            Object.setPrototypeOf(B.prototype, A.prototype)
+
+            // 修改构造函数的引用指向自身
+            B.prototype.constructor = B
+
+            a instanceof B 
+            B是一个函数，a是一个对象，B的原型是否在a的原型链中，如果在就返回true,
+            一般用来判断a是否是B构造出来的实例
+
+            instanceof只能判断对象和函数之间的关系，而无法判断两个对象之间的关系，因此可以
+            通过中间函数来判断两个对象的关系
+
+            方法1：
+            function isInstanceof (a,b) {
+              function F(){}
+              F.prototype = b // 函数才有prototype属性，表示实例的原型对象，对象只有__proto__,指向函数的Prototype(它的原型),函数的__proto__指向它的函数的prototype(Function.prototype)
+              return a instanceof F 
+            }
+            const a = {}
+            const b = Object.create(a)
+            isInstanceof(b,a) // true
+
+            方法2：
+              a.isPrototypeOf(b) // true
+              a是否是b的原型
+
+            方法3：
+              Object.getPrototypeof(b) === a 
+
+            方法4：
+              b.__proto__ === a
+
+          __proto__的实现
+            Object.defineProperty(Object.prototype, '__proto__', {
+              set(o){
+                Object.setPrototypeOf( this, o )
+                return o
+              },
+              get(){
+                return  Object.getPrototypeOf( this )
+              }
+            })
+
+          setPrototypeOf和prototype和__proto__设置原型的区别？
+          setPrototypeOf内部通过__proto__来给对象设置原型
+          一个对象的__proto__指向的是这个对象的构造函数的prototype
+          一个函数的__proto__指向的是这个函数的构造函数(Function)的prototype
+          一个函数的prototype就是这个函数的原型对象(只有函数才有prototype)
+
+          function A(){}
+          const a = new A()
+          a.__proto__ === A.prototype 
+          A.__proto__ === Function.prototype
+
+          A.prototype并不等于A.__proto__，它们分别是两个东西
+
+          如果使用setPrototypeof给函数设置原型，
+          Object.setPrototypeof(A,{}) 
+          那么就相当于
+          A.__proto__ = {}
+          所以setPrototypeof给函数设置的原型和直接给函数的prototype设置值是两个不同的东西
+          A.prototype = {}
+
+          Object.create(obj,{属性:{描述符}})
+            创建一个新的对象，并且指定这个对象到原型为obj,并且可以给新的对象身上添加额外的属性
+
+            eg:
+              创建一个对象myObject，并且给他添加属性b和c 
+              var anotherObject = { a:2 }; 
+              var myObject = Object.create( anotherObject, {      
+                b: {         
+                  enumerable: false,          
+                  writable: true,          
+                  configurable: false,          
+                  value: 3     
+                },     
+                c: {         
+                  enumerable: true,          
+                  writable: false,          
+                  configurable: false,          
+                  value: 4     
+                } 
+              }); 
+              myObject.hasOwnProperty( "a" ); // false 
+              myObject.hasOwnProperty( "b" ); // true 
+              myObject.hasOwnProperty( "c" ); // true 
+              myObject.a; // 2  
+              myObject.b; // 3  
+              myObject.c; // 4
+
+          实现Object.create
+            function create(o){
+              function F(){}
+              F.prototype = o 
+              return new F()
+            }
+
+          
+
+
+
+
+            
+
+            
+
+          
+
+
 
 
 
@@ -837,11 +1548,8 @@
 </template>
 
 <script>
-export default {
-
-}
+export default {};
 </script>
 
 <style>
-
 </style>
